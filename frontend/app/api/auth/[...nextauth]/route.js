@@ -12,6 +12,9 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         try {
+          console.log("Attempting login with:", credentials?.email);
+          console.log("Backend URL:", process.env.NEXT_PUBLIC_API_URL);
+
           const response = await axios.post(
             `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
             {
@@ -21,6 +24,7 @@ const handler = NextAuth({
           );
 
           if (response.data.token) {
+            console.log("Login successful for:", response.data.user.email);
             return {
               id: response.data.user.id,
               email: response.data.user.email,
@@ -30,7 +34,9 @@ const handler = NextAuth({
             };
           }
         } catch (error) {
-          console.error("Auth error:", error);
+          console.error("Auth error:", error.response?.data || error.message);
+          const errorMsg = error.response?.data?.error || "Unable to sign in";
+          throw new Error(errorMsg);
         }
         return null;
       },
